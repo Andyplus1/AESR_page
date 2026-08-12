@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Identity-Preserving Text-to-Video Generation via Agentic Enhancement and Semantic Repair</title>
+  <style>
+    :root {
+      --text: #343434;
+      --muted: #686868;
+      --line: #dedede;
+      --accent: #438fba;
+      --paper: #ffffff;
+      --soft: #f7f8f9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background: var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 62px 0 80px;
+    }
+
+    .paper-header {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #303030;
+      font-size: 44px;
+      line-height: 1.17;
+      font-weight: 700;
+    }
+
+    .authors {
+      margin: 28px 0 0;
+      color: var(--accent);
+      font-size: 19px;
+      line-height: 1.5;
+    }
+
+    .authors a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .authors a:hover, .authors a:focus-visible {
+      text-decoration: underline;
+    }
+
+    .authors a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .affiliation {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .venue {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .paper-links {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .paper-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 19px;
+      color: #ffffff;
+      background: #373737;
+      border-radius: 5px;
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .paper-link:hover, .paper-link:focus-visible { background: #202020; }
+    .paper-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    section { margin-top: 78px; }
+
+    h2 {
+      margin: 0 0 28px;
+      color: #333333;
+      font-size: 32px;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .abstract {
+      max-width: 880px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    .abstract p, .method-copy {
+      margin: 0;
+      color: #4d4d4d;
+      font-size: 16px;
+      line-height: 1.72;
+      text-align: justify;
+    }
+
+    .method-figure {
+      width: 100%;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid #eeeeee;
+    }
+
+    .method-copy {
+      max-width: 900px;
+      margin: 24px auto 0;
+    }
+
+    .results {
+      padding-top: 4px;
+    }
+
+    .case-block {
+      margin-top: 64px;
+      padding-top: 38px;
+      border-top: 1px solid var(--line);
+    }
+
+    .case-block:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+
+    .case-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      color: #444444;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .case-heading span:first-child { color: var(--accent); }
+
+    .case-intro {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      max-width: 980px;
+      margin: 0 auto 44px;
+    }
+
+    .source-block {
+      margin: 0;
+    }
+
+    .source-image {
+      width: 170px;
+      height: 170px;
+      display: block;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    .source-block figcaption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .prompt-label {
+      display: block;
+      margin: 2px 0 10px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .prompt-copy {
+      margin: 0;
+      color: #4d4d4d;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .video-result {
+      min-width: 0;
+      margin: 0;
+    }
+
+    .method-name {
+      min-height: 50px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      margin-bottom: 10px;
+      color: #333333;
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .method-prefix { color: var(--accent); }
+
+    video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 864 / 496;
+      object-fit: cover;
+      background: #111111;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    .video-result figcaption {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .bibtex {
+      max-width: 880px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      padding: 20px 22px;
+      color: #404040;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      margin-top: 72px;
+      padding-top: 22px;
+      color: #898989;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      main { padding-top: 50px; }
+      h1 { font-size: 38px; }
+      .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 18px; }
+    }
+
+    @media (max-width: 620px) {
+      main { width: min(100% - 32px, 1120px); padding: 40px 0 54px; }
+      h1 { font-size: 31px; }
+      .authors { margin-top: 22px; font-size: 17px; }
+      section { margin-top: 58px; }
+      h2 { margin-bottom: 24px; font-size: 27px; }
+      .abstract p, .method-copy { font-size: 15px; text-align: left; }
+      .case-intro { grid-template-columns: 92px minmax(0, 1fr); gap: 18px; }
+      .source-image { width: 92px; height: 92px; }
+      .prompt-copy { font-size: 14px; }
+      .video-grid { grid-template-columns: 1fr; }
+      .method-name { min-height: auto; }
+      .case-heading { display: block; line-height: 1.5; }
+      .case-heading span { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="paper-header">
+      <h1>Identity-Preserving Text-to-Video Generation via Agentic Enhancement and Semantic Repair</h1>
+      <p class="authors"><a href="https://github.com/Andyplus1/" target="_blank" rel="noopener">Jiayi Gao</a>, Changcheng Hua, Jiaqi Tang, Yuxin Peng, <a href="https://www.csyangliu.com/" target="_blank" rel="noopener">Yang Liu</a></p>
+      <div class="paper-links">
+        <a class="paper-link" href="assets/paper.pdf" target="_blank" rel="noopener">Paper</a>
+      </div>
+    </header>
+
+    <section class="abstract" aria-labelledby="abstract-heading">
+      <h2 id="abstract-heading">Abstract</h2>
+      <p>Identity-preserving video generation aims to synthesize videos that follow natural-language instructions while maintaining the visual identity of a given subject. Recent commercial video generation models have achieved strong visual quality and motion realism, but they still suffer from identity drift, incomplete instruction following, and missing visual details under complex prompts. Since these models are usually closed-source black boxes, directly improving them through parameter optimization is often infeasible. We therefore propose Agentic Enhancement and Semantic Repair (AESR), a lightweight enhancement framework for identity-preserving video generation. To improve prompt construction before generation and mitigate the above failures, AESR introduces a global agentic prompt enhancement module. This module learns model-specific prompting formats from official documentation, acquiring human-centered video generation priors from human-interaction data, and accumulates test-domain identity-preserving generation experience into a reusable playbook through an agentic loop. To repair draft-specific errors after generation, AESR further introduces a sample-level visual semantic repair module, which uses a VLM to locate erroneous video segments and design repair instructions, edits selected frames into explicit visual references, and guides a video editing model to fix local semantic or identity-related errors. We also adopt a lightweight Mixture-of-Experts selection strategy to choose reliable outputs from different generation and refinement paths. Under the official evaluation protocol of the ACM MM 2026 Identity-Preserving Video Generation Challenge, our system MIPL_Video ranked first in Track 1, demonstrating the effectiveness of AESR for practical identity-preserving video generation.</p>
+    </section>
+
+    <section aria-labelledby="method-heading">
+      <h2 id="method-heading">Method Overview</h2>
+      <img class="method-figure" src="assets/pipeline.png" alt="AESR method pipeline with global-level agentic playbook enhancement and sample-level visual semantic repair">
+      <p class="method-copy">AESR generates an identity-preserving video through two complementary stages. Stage I uses a reusable agentic playbook to transform the original instruction into a model-aware prompt before video synthesis. Stage II analyzes the resulting draft, identifies semantic gaps, constructs explicit edited visual references, and guides targeted video refinement.</p>
+    </section>
+
+    <section class="results" aria-labelledby="results-heading">
+      <h2 id="results-heading">Qualitative Comparison</h2>
+      <div class="case-intro">
+        <figure class="source-block">
+          <img class="source-image" src="assets/id033-source.png" alt="Reference identity for case 033">
+          <figcaption>Source identity · id033</figcaption>
+        </figure>
+        <div>
+          <span class="prompt-label">Text Prompt · Case 033</span>
+          <p class="prompt-copy">A young Latino man with sleek dark hair, a neatly trimmed goatee, and prominent black ear gauges carves dynamically across a surreal sheet of ice laid on golden beach sand. As the fiery orange sun dips below the horizon, he maintains a steady forward gaze, scanning the path. Mid-movement, he abruptly pivots his head sharply to the right, his gaze shifting to track a breaking wave before snapping back to the center. A dynamic tracking shot moves laterally alongside him, matching his speed, while simultaneously zooming in to frame his focused expression against the cooling twilight sky.</p>
+        </div>
+      </div>
+
+      <div class="video-grid" aria-label="Four generated video results">
+        <figure class="video-result">
+          <div class="method-name">Seedance 2.0</div>
+          <video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id033/m1_same_crop.mp4"></video>
+          <figcaption>m1 · Baseline</figcaption>
+        </figure>
+
+        <figure class="video-result">
+          <div class="method-name"><span><span class="method-prefix">+ Official</span><br>Document-based Playbook</span></div>
+          <video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id033/m2_doc_only_enhance.mp4"></video>
+          <figcaption>m2 · Official playbook</figcaption>
+        </figure>
+
+        <figure class="video-result">
+          <div class="method-name"><span class="method-prefix">+ Stage I</span></div>
+          <video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id033/m3_ace_enhanced_r2v.mp4"></video>
+          <figcaption>m3 · Agentic enhancement</figcaption>
+        </figure>
+
+        <figure class="video-result">
+          <div class="method-name"><span class="method-prefix">+ Stage I &amp; II</span></div>
+          <video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id033/m5_ace_edit_v2.mp4"></video>
+          <figcaption>m5 · Full pipeline</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-block">
+        <div class="case-heading"><span>Case 048</span><span>Gold-medal award in a bunk-bed setting</span></div>
+        <div class="case-intro">
+          <figure class="source-block">
+            <img class="source-image" src="assets/id048-source.png" alt="Reference identity for case 048">
+            <figcaption>Source identity · id048</figcaption>
+          </figure>
+          <div>
+            <span class="prompt-label">Text Prompt · Case 048</span>
+            <p class="prompt-copy">A middle-aged Black woman with long black braids secured by a vibrant pink and blue floral headband and wearing a soft grey hoodie sits perched on the edge of the top bunk of a wooden bunk bed, turning her head slightly to the side and lowering her gaze with a gentle, focused expression as she extends a hand to award a gleaming gold medal.</p>
+          </div>
+        </div>
+        <div class="video-grid" aria-label="Four generated video results for case 048">
+          <figure class="video-result"><div class="method-name">Seedance 2.0</div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id048/m1_same_crop.mp4"></video><figcaption>m1 · Baseline</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span><span class="method-prefix">+ Official</span><br>Document-based Playbook</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id048/m2_doc_only_enhance.mp4"></video><figcaption>m2 · Official playbook</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id048/m3_ace_enhanced_r2v.mp4"></video><figcaption>m3 · Agentic enhancement</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I &amp; II</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id048/m5_ace_edit_v2.mp4"></video><figcaption>m5 · Full pipeline</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <div class="case-heading"><span>Case 092</span><span>Outdoor monastery auction</span></div>
+        <div class="case-intro">
+          <figure class="source-block">
+            <img class="source-image" src="assets/id092-source.png" alt="Reference identity for case 092">
+            <figcaption>Source identity · id092</figcaption>
+          </figure>
+          <div>
+            <span class="prompt-label">Text Prompt · Case 092</span>
+            <p class="prompt-copy">A middle-aged Caucasian woman with long wavy dark brown hair and distinct freckles scattered across her nose is smiling broadly while shifting her gaze from a catalog to the seller to bid on a valuable piece of art during an exclusive outdoor auction event held within the quiet, sun-drenched stone courtyard of a serene monastery garden surrounded by ancient towering walls and blooming flowers as the camera performs a slow rack focus pan around her expressive face.</p>
+          </div>
+        </div>
+        <div class="video-grid" aria-label="Four generated video results for case 092">
+          <figure class="video-result"><div class="method-name">Seedance 2.0</div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id092/m1_same_crop.mp4"></video><figcaption>m1 · Baseline</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span><span class="method-prefix">+ Official</span><br>Document-based Playbook</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id092/m2_doc_only_enhance.mp4"></video><figcaption>m2 · Official playbook</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id092/m3_ace_enhanced_r2v.mp4"></video><figcaption>m3 · Agentic enhancement</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I &amp; II</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id092/m5_ace_edit_v2.mp4"></video><figcaption>m5 · Full pipeline</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <div class="case-heading"><span>Case 120</span><span>Clay figurine carving in a fish market</span></div>
+        <div class="case-intro">
+          <figure class="source-block">
+            <img class="source-image" src="assets/id120-source.png" alt="Reference identity for case 120">
+            <figcaption>Source identity · id120</figcaption>
+          </figure>
+          <div>
+            <span class="prompt-label">Text Prompt · Case 120</span>
+            <p class="prompt-copy">A middle-aged Caucasian man is meticulously carving a detailed figurine out of wet clay on a makeshift wooden crate station in a bustling fish market, starting with his gaze fixed intensely downward on his sculpting tools before he slowly turns his head upward to engage the viewer with a piercing stare while the camera executes a smooth, compound tracking shot moving closer and racking focus from the busy vendors in the background to his serious facial features, emphasizing the contrast between his formal business attire and the raw, messy environment surrounding him.</p>
+          </div>
+        </div>
+        <div class="video-grid" aria-label="Four generated video results for case 120">
+          <figure class="video-result"><div class="method-name">Seedance 2.0</div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id120/m1_same_crop.mp4"></video><figcaption>m1 · Baseline</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span><span class="method-prefix">+ Official</span><br>Document-based Playbook</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id120/m2_doc_only_enhance.mp4"></video><figcaption>m2 · Official playbook</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id120/m3_ace_enhanced_r2v.mp4"></video><figcaption>m3 · Agentic enhancement</figcaption></figure>
+          <figure class="video-result"><div class="method-name"><span class="method-prefix">+ Stage I &amp; II</span></div><video controls autoplay muted loop playsinline preload="auto" src="assets/videos/id120/m5_ace_edit_v2.mp4"></video><figcaption>m5 · Full pipeline</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="bibtex" aria-labelledby="bibtex-heading">
+      <h2 id="bibtex-heading">BibTeX</h2>
+      <pre>@inproceedings{gao2026aesr,
+  title={Identity-Preserving Text-to-Video Generation via Agentic Enhancement and Semantic Repair},
+  author={Gao, Jiayi and Hua, Changcheng and Tang, Jiaqi and Peng, Yuxin and Liu, Yang},
+  booktitle={Proceedings of the ACM International Conference on Multimedia},
+  year={2026}
+}</pre>
+    </section>
+
+    <footer>Identity-Preserving Text-to-Video Generation · ACM Multimedia 2026 Submission</footer>
+  </main>
+</body>
+</html>
